@@ -1,46 +1,203 @@
-# Getting Started with Create React App
+# Trello Clone
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- we are going to seperate tasks by sections and give drag and drop ability to users to move tasks around. 
 
-## Available Scripts
+# Development
 
-In the project directory, you can run:
+# 1 Get Selector
+- Proof of concepts:
 
-### `npm start`
+- This proof od concept will be shown through giving an example.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Build a time coverter that takes the minutes and convert into an our.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+App.tsx
+```js
+import React from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { hourSelector, minuteState } from "./atoms";
 
-### `npm test`
+function App() {
+  // use recoil to get the state and the setter from atom.
+  const [minutes, setMinutes] = useRecoilState(minuteState);
+  // use recoil to get the value from hourSelector from atom.
+  const hours = useRecoilValue(hourSelector);
+  // once the value inside the input changes, it will use the setter to update the state Minutes.
+  const onMinutesChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setMinutes(+event.currentTarget.value);
+  };
+  return (
+    <div>
+      <input
+        value={minutes}
+        onChange={onMinutesChange}
+        type="number"
+        placeholder="Minutes"
+      />
+      <input value={hours} type="number" placeholder="Hours" />
+    </div>
+  );
+}
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+export default App;
+```
 
-### `npm run build`
+atom.tsx
+```java
+import { atom, selector } from "recoil";
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+export const minuteState = atom({
+  key: "minutes",
+  default: 0,
+});
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+export const hourSelector = selector({
+  key: "hours",
+  // when the hourSelector is called, it will get the minutes and convert it to hours.
+  get: ({ get }) => {
+    const minutes = get(minuteState);
+    return minutes / 60;
+  },
+});
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# 2 Set Selectors
 
-### `npm run eject`
+- Setter will set the value.
+- You can use setter that modify the value of other.
+    - if you put in the hour, it will change the value of minutes also. 
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+snippet of atoms.tsx:
+```js
+  set: ({ set }, newValue) => {
+    const minutes = Number(newValue) * 60;
+    set(minuteState, minutes);
+  },
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+snippet of app.tsx:
+```js
+import React from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { hourSelector, minuteState } from "./atoms";
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+function App() {
+......
+  const [hours, setHours] = useRecoilState(hourSelector);
+  // once the value inside the input changes, it will use the setter to update the state Minutes.
+  const onMinutesChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setMinutes(+event.currentTarget.value);
+  };
+  // On input for hour onchange, it will use the setter to update minutes.
+  const onHoursChange = (event: React.FormEvent<HTMLInputElement>) => {
+    setHours(+event.currentTarget.value);
+  };
+  return (
+    <div>
+      <input
+        value={minutes}
+        onChange={onMinutesChange}
+        type="number"
+        placeholder="Minutes"
+      />
+      <input
+        onChange={onHoursChange}
+        value={hours}
+        type="number"
+        placeholder="Hours"
+      />
+      <input value={hours} type="number" placeholder="Hours" />
+    </div>
+  );
+}
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+export default App;
+```
 
-## Learn More
+# 3 Drag and Drop 
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- In your developer life, you will need to create something that create reorder of tasks.
+- You can use *react-beautiful-dnd*
+```js
+npm i react-beautiful-dnd
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Components:
+<DragDropContext>: part of your app that allows drag and drop
+<Droppable>: place where you drop
+<Draggable>: Draggable content
+
+- when you use these components, you have to give the draggableID for <Draggable>.
+
+App.tsx
+```js
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+
+function App() {
+  const onDragEnd = () => {};
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div>
+        <Droppable droppableId="one">
+          {() => (
+            <ul>
+              <Draggable draggableId="first" index={0}>
+                {() => <li>One</li>}
+              </Draggable>
+              <Draggable draggableId="second" index={1}>
+                {() => <li>Two</li>}
+              </Draggable>
+            </ul>
+          )}
+        </Droppable>
+      </div>
+    </DragDropContext>
+  );
+}
+
+export default App;
+```
+
+atom.tsx:
+```js
+import { atom, selector } from "recoil";
+```
+
+
+- We put funciton as the children of draggable because they need a special props to activiate drag and drop animation.
+- we just need a first argument. It is called a provider. 
+- Drag from any postion vs Drag from the corner.
+- Drag in the corner will be
+```js
+{(magic) => (
+    <ul ref={magic.innerRef} {...magic.droppableProps}>
+        <Draggable draggableId="first" index={0}>
+        {(magic) => (
+            <li ref={magic.innerRef} {...magic.draggableProps}>
+            <span {...magic.dragHandleProps}>🔥</span>
+            One
+            </li>
+        )}
+```
+
+- Once you set up draggable, you will see that the mouse pointer changes to a grabbable hand.
+
+# 4. Style and placeholder
+
+- Make the drag and drop container and content look like Trello
+
+- Color change
+theme.ts
+```js
+import { DefaultTheme } from "styled-components";
+
+export const darkTheme: DefaultTheme = {
+  bgColor: "#3F8CF2",
+  boardColor: "#DADFE9",
+  cardColor: "white",
+};
+```
+
+- Create a container and content holders with syled-component.
+- When the task leave the content, the placeholder shrinks. You can set the placeholder to avoid this.
+- Also, when you move around the tasks, the re-ordering does not work.
