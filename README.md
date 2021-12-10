@@ -350,3 +350,66 @@ Object.keys(toDos).map(boardID =>toD0s [boardId])
 2. Modify the order. 
 3. Return other boards.
 
+
+# 9 Cross Board Movement.
+
+- if you are moving from one section to the another, you have to copy two sections source, destination. 
+- We return all the rest of the board.
+- 
+
+# 10 Droppable Snapshot
+
+- When you are moving, how do you know when the droppable is leaving or coming in. 
+- Change the background color when the things are happending. 
+- If you are dragging over, make it pink.
+
+# 12 Final Styles
+
+- Multiboard changes the color area depending on the status of the droppable. 
+
+# 13 Ref
+
+- Start building a form so that user can write something and press enter. 
+
+- reference is something that we used. ref is basically way to point and grab some html element with out react code. (from javascript) 
+
+- Ref allows use to grab the HTML component from react. 
+```js
+
+const inputRef = useRef(null);
+const onClick = () => {
+  // this is HTML thing that you borrowed.
+  inputref.current?.focus()
+  // after 5 sec, we let go of the focus
+  setTimeout(() => {inputRef.current})
+
+};
+<input ref={inputRef} placeholder="grab me" />
+<button> Click me </button>
+
+```
+
+- Beautiful event have many things in props. 
+- Ref grab HTML element and trigger thing from the HTML element.
+- for example, video player can be paused and played if you take the video tag and use paused() or play() functions. 
+
+- useForm() from react-hook. 
+Steps:
+
+1. Create styled.form in styled-component to create a form. 
+ - type: text ; placeholder: text in the blank
+2. use register to get the data from the user
+
+```
+<input
+  {...register("toDo", {required:true})}
+>
+```
+
+3. When the form is submitted, it will turn the form into an emtpy state. 
+
+4. strategy
+- before, suppose we have ["a" , "b"]
+- 
+
+# 14 - 
